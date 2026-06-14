@@ -8,7 +8,8 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 
 
 embedding_model = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
+    model_name="sentence-transformers/all-MiniLM-L6-v2",
+    encode_kwargs={"batch_size": 32}
 )
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY") # load the GROQ API key from the .env file
@@ -67,6 +68,7 @@ def create_vector_store(chunks, persist_directory="db/chroma_db"):
         documents=chunks,
         embedding=embedding_model,
         persist_directory=persist_directory,
+        collection_name="rag_collection",   # ADD THIS
         collection_metadata={"hnsw:space": "cosine"}
     )
     
