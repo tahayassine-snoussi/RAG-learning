@@ -1,12 +1,18 @@
 from langchain_chroma import Chroma # vector store for storing and querying embeddings
 from dotenv import load_dotenv # load environment variables from a .env file
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from groq import Groq
+import os 
+
 
 load_dotenv()
 embedding_model = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
     encode_kwargs={"batch_size": 32}
 )
+
+client = Groq(api_key=os.getenv("GROQ_API_KEY")) # initialize the Groq client with the API key from the .env file
+
 
 persistent_directory = "db/chroma_db" # directory to persist the vector store
 
@@ -37,6 +43,37 @@ print(f"\nUser Query: {query}")
 print("--- Context ---")
 for i, doc in enumerate(relevant_docs, 1):
     print(f"Document {i}:\n{doc.page_content}\n")
+
+
+combined_input = f"""Based on the following documents, please answer this question: {query}
+
+Documents:
+{chr(10).join([f"- {doc.page_content}" for doc in relevant_docs])}
+
+Please provide a clear, helpful answer using only the information from these documents. If you can't find the answer in the documents, say "I don't have enough information to answer that question based on the provided documents."
+"""
+
+response = client.chat.completions.create(
+    model="llama-3.3-70b-versatile",  # example model
+    messages=[
+        {
+            "role": "user",
+            "content": combined_input
+        }
+    ]
+)
+
+# Display the full result and content only
+print("\n--- Generated Response ---")
+# print("Full result:")
+# print(result)
+print("Content only:")
+print(response.choices[0].message.content)
+
+
+
+
+
 
 
 
