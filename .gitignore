@@ -2,4 +2,7 @@
 .venv/
 .vscode/
 __pycache__/
-data/
+data/db/chroma_db/
+src/vectorstore/
+src/db/
+db/
